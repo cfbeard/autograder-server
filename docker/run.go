@@ -35,6 +35,10 @@ func RunContainer(logId log.Loggable, imageName string, inputDir string, outputD
         },
         &container.HostConfig{
             AutoRemove: true,
+            LogConfig: container.LogConfig{
+                Type: "json-file",
+                Config: map[string]string{"max-size": "1b"},
+            },
             Mounts: []mount.Mount{
                 mount.Mount{
                     Type: "bind",
