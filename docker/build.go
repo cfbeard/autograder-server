@@ -168,8 +168,8 @@ func writeDockerContext(imageInfo *ImageInfo, dir string) error {
         return fmt.Errorf("Failed to create docker config file: '%w'.", err);
     }
 
-    dockerPostSubmittionOpsPath := filepath.Join(dir, DOCKER_POST_SUBMISSION_OPS_FILENAME);
-    err = writePostSubmissionOpsScript(imageInfo, dockerPostSubmittionOpsPath);
+    dockerPostSubmissionOpsPath := filepath.Join(dir, DOCKER_POST_SUBMISSION_OPS_FILENAME);
+    err = writePostSubmissionOpsScript(imageInfo, dockerPostSubmissionOpsPath);
     if (err != nil) {
         return fmt.Errorf("Failed to write post-submission operations script: '%w'.", err);
     }
