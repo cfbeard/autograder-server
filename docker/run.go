@@ -2,6 +2,7 @@ package docker
 
 import (
     "fmt"
+    "io"
     "regexp"
     "strings"
 
@@ -36,8 +37,7 @@ func RunContainer(logId log.Loggable, imageName string, inputDir string, outputD
         &container.HostConfig{
             AutoRemove: true,
             LogConfig: container.LogConfig{
-                Type: "json-file",
-                Config: map[string]string{"max-size": "1b"},
+                Config: map[string]string{"max-size": "1000b"},
             },
             Mounts: []mount.Mount{
                 mount.Mount{
@@ -74,6 +74,8 @@ func RunContainer(logId log.Loggable, imageName string, inputDir string, outputD
         Follow: true,
     })
 
+    r := io.LimitReader(out, 10)
+
     if (err != nil) {
         log.Warn("Failed to get output from container (but run did not throw an error).",
                 err, logId,
@@ -100,7 +102,16 @@ func RunContainer(logId log.Loggable, imageName string, inputDir string, outputD
         outBuffer := new(strings.Builder);
         errBuffer := new(strings.Builder);
 
-        stdcopy.StdCopy(outBuffer, errBuffer, out);
+        written, err := stdcopy.StdCopy(outBuffer, errBuffer, r);
+        if err != nil {
+
+        }
+
+        if written > 1000 {
+            return "", "", &dockerLogLimitExceeded{
+                written,
+            }
+        }
 
         stdout = outBuffer.String();
         stderr = errBuffer.String();
@@ -126,4 +137,12 @@ func cleanContainerName(text string) string {
     }
 
     return text;
+}
+
+type dockerLogLimitExceeded struct {
+    OutputSize int64
+}
+
+func (this *dockerLogLimitExceeded) Error() string {
+    return fmt.Sprintf("Output of %d bytes exceeds the limit. Do you have an infinite loop?", this.OutputSize)
 }
