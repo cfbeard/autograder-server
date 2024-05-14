@@ -145,13 +145,13 @@ func newFixedBuffer(limit int) *fixedBuffer {
 
 func (this *fixedBuffer) Write(p []byte) (int, error) {
     if this.limit > 0 && this.buf.Len() + len(p) > this.limit {
-        return 0, bufferOverflowError
+        return 0, bufferOverflowError;
     }
-    return this.buf.Write(p)
+    return this.buf.Write(p);
 }
 
 func (this *fixedBuffer) String() string {
-    return this.buf.String()
+    return this.buf.String();
 }
 
-var bufferOverflowError = errors.New("Output exceeds limit. Do you have an infinite loop?")
+var bufferOverflowError = errors.New("Output exceeds limit. Do you have an infinite loop?");

@@ -111,14 +111,14 @@ func runSubmissionTests(test *testing.T, parallel bool, useDocker bool) {
 }
 
 func TestErrorSubmissions(test *testing.T) {
-    resetVal := config.GRADER_OUTPUT_LIMIT_KB.Get()
-    config.GRADER_OUTPUT_LIMIT_KB.Set(1)
-    defer config.GRADER_OUTPUT_LIMIT_KB.Set(resetVal)
+    resetVal := config.GRADER_OUTPUT_LIMIT_KB.Get();
+    config.GRADER_OUTPUT_LIMIT_KB.Set(1);
+    defer config.GRADER_OUTPUT_LIMIT_KB.Set(resetVal);
 
-    db.ResetForTesting()
-    defer db.ResetForTesting()
+    db.ResetForTesting();
+    defer db.ResetForTesting();
 
-    baseDir := config.GetCourseImportDir()
+    baseDir := config.GetCourseImportDir();
 
     assignment := db.MustGetTestAssignment()
     err := docker.BuildImageFromSource(assignment, false, false, docker.NewBuildOptions());
@@ -169,7 +169,7 @@ func TestErrorSubmissions(test *testing.T) {
 
             if (testSubmission.TestSubmission.Error != err.Error()) {
                 test.Fatalf("Actual error:\n---\n%v\n---\ndoes not match expected err:\n---\n%v\n---\n.",
-                    testSubmission.TestSubmission.Error, err.Error())
+                    testSubmission.TestSubmission.Error, err.Error());
             }
 
         });
