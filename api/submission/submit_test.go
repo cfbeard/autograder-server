@@ -5,7 +5,6 @@ import (
     "testing"
 
     "github.com/edulinq/autograder/api/core"
-    "github.com/edulinq/autograder/common"
     "github.com/edulinq/autograder/config"
     "github.com/edulinq/autograder/db"
     "github.com/edulinq/autograder/grader"
@@ -16,7 +15,7 @@ import (
 var SUBMISSION_RELPATH string = filepath.Join("test-submissions", "solution", "submission.py");
 
 func TestSubmit(test *testing.T) {
-    testSubmissions, err := grader.GetTestSubmissions(config.GetCourseImportDir(), common.TEST_SUBMISSIONS);
+    testSubmissions, err := grader.GetTestSubmissions(config.GetCourseImportDir());
     if (err != nil) {
         test.Fatalf("Failed to get test submissions in '%s': '%v'.", config.GetCourseImportDir(), err);
     }

@@ -6,6 +6,7 @@ import (
     "slices"
     "strings"
 
+    "github.com/edulinq/autograder/common"
     "github.com/edulinq/autograder/db"
     "github.com/edulinq/autograder/model"
     "github.com/edulinq/autograder/util"
@@ -19,7 +20,53 @@ type TestSubmissionInfo struct {
     Assignment *model.Assignment
 }
 
-func GetTestSubmissions(baseDir string, filename string) ([]*TestSubmissionInfo, error) {
+func GetTestSubmissions(baseDir string) ([]*TestSubmissionInfo, error) {
+    testSubmissions, err := getTestSubmssions(baseDir, common.TEST_SUBMISSIONS);
+    if err != nil {
+        return nil, err;
+    }
+
+    return testSubmissions, nil;
+}
+
+func GetErrorTestSubmissions(baseDir string) ([]*TestSubmissionInfo, error) {
+    testSubmissions, err := getTestSubmssions(baseDir, common.TEST_ERROR_SUBMISSIONS);
+    if err != nil {
+        return nil, err;
+    }
+
+    return testSubmissions, nil;
+}
+
+// Test submission are within their assignment's directory,
+// just check the source dirs for existing courses and assignments.
+func fetchTestSubmissionAssignment(testSubmissionPath string) (*model.Assignment, error) {
+    testSubmissionPath = util.ShouldAbs(testSubmissionPath);
+
+    assignmentPath := util.SearchParents(testSubmissionPath, model.ASSIGNMENT_CONFIG_FILENAME);
+    if (assignmentPath == "") {
+        return nil, fmt.Errorf("Could not find assignment file for test submission.");
+    }
+
+    coursePath := util.SearchParents(testSubmissionPath, model.COURSE_CONFIG_FILENAME);
+    if (coursePath == "") {
+        return nil, fmt.Errorf("Could not find course file for test submission.");
+    }
+
+    course, err := model.ReadCourseConfig(coursePath);
+    if (err != nil) {
+        return nil, fmt.Errorf("Failed to load course '%s': '%w'.", coursePath, err);
+    }
+
+    assignment, err := model.ReadAssignmentConfig(course, assignmentPath);
+    if (err != nil) {
+        return nil, fmt.Errorf("Failed to load assignment '%s': '%w'.", assignmentPath, err);
+    }
+
+    return db.GetAssignment(course.GetID(), assignment.GetID());
+}
+
+func getTestSubmssions(baseDir string, filename string) ([]*TestSubmissionInfo, error) {
     testSubmissionPaths, err := util.FindFiles(filename, baseDir);
     if (err != nil) {
         return nil, fmt.Errorf("Could not find test results in '%s': '%w'.", baseDir, err);
@@ -65,32 +112,4 @@ func GetTestSubmissions(baseDir string, filename string) ([]*TestSubmissionInfo,
     }
 
     return testSubmissions, nil;
-}
-
-// Test submission are within their assignment's directory,
-// just check the source dirs for existing courses and assignments.
-func fetchTestSubmissionAssignment(testSubmissionPath string) (*model.Assignment, error) {
-    testSubmissionPath = util.ShouldAbs(testSubmissionPath);
-
-    assignmentPath := util.SearchParents(testSubmissionPath, model.ASSIGNMENT_CONFIG_FILENAME);
-    if (assignmentPath == "") {
-        return nil, fmt.Errorf("Could not find assignment file for test submission.");
-    }
-
-    coursePath := util.SearchParents(testSubmissionPath, model.COURSE_CONFIG_FILENAME);
-    if (coursePath == "") {
-        return nil, fmt.Errorf("Could not find course file for test submission.");
-    }
-
-    course, err := model.ReadCourseConfig(coursePath);
-    if (err != nil) {
-        return nil, fmt.Errorf("Failed to load course '%s': '%w'.", coursePath, err);
-    }
-
-    assignment, err := model.ReadAssignmentConfig(course, assignmentPath);
-    if (err != nil) {
-        return nil, fmt.Errorf("Failed to load assignment '%s': '%w'.", assignmentPath, err);
-    }
-
-    return db.GetAssignment(course.GetID(), assignment.GetID());
 }

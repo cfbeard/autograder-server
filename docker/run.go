@@ -84,8 +84,10 @@ func RunContainer(logId log.Loggable, imageName string, inputDir string, outputD
     stderr := "";
 
     if (out != nil) {
-        outBuffer := newFixedBuffer(config.GRADER_OUTPUT_LIMIT_KB.Get() * 1024);
-        errBuffer := newFixedBuffer(config.GRADER_OUTPUT_LIMIT_KB.Get() * 1024);
+        outputLimit := (config.GRADER_OUTPUT_LIMIT_KB.Get() * 1024) / 2
+
+        outBuffer := newFixedBuffer(outputLimit);
+        errBuffer := newFixedBuffer(outputLimit);
 
         _, err = stdcopy.StdCopy(outBuffer, errBuffer, out);
 
@@ -131,27 +133,27 @@ func cleanContainerName(text string) string {
 }
 
 type fixedBuffer struct {
-    buf *strings.Builder
-    limit int
+    buffer *strings.Builder
+    limit  int
 }
 
 func newFixedBuffer(limit int) *fixedBuffer {
     buf := new(strings.Builder)
     return &fixedBuffer{
-        buf: buf,
-        limit: limit,
+        buffer: buf,
+        limit:  limit,
     }
 }
 
-func (this *fixedBuffer) Write(p []byte) (int, error) {
-    if this.limit > 0 && this.buf.Len() + len(p) > this.limit {
+func (this *fixedBuffer) Write(payload []byte) (int, error) {
+    if this.limit > 0 && this.buffer.Len() + len(payload) > this.limit {
         return 0, bufferOverflowError;
     }
-    return this.buf.Write(p);
+    return this.buffer.Write(payload);
 }
 
 func (this *fixedBuffer) String() string {
-    return this.buf.String();
+    return this.buffer.String();
 }
 
 var bufferOverflowError = errors.New("Output exceeds limit. Do you have an infinite loop?");

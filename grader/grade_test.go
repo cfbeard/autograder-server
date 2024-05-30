@@ -4,7 +4,6 @@ import (
     "fmt"
     "testing"
 
-    "github.com/edulinq/autograder/common"
     "github.com/edulinq/autograder/config"
     "github.com/edulinq/autograder/db"
     "github.com/edulinq/autograder/docker"
@@ -55,7 +54,7 @@ func runSubmissionTests(test *testing.T, parallel bool, useDocker bool) {
         NoDocker: !useDocker,
     };
 
-    testSubmissions, err := GetTestSubmissions(baseDir, common.TEST_SUBMISSIONS);
+    testSubmissions, err := GetTestSubmissions(baseDir);
     if (err != nil) {
         test.Fatalf("Error getting test submissions in '%s': '%v'.", baseDir, err);
     }
@@ -135,7 +134,7 @@ func TestErrorSubmissions(test *testing.T) {
         }
     }
 
-    testSubmissions, err := GetTestSubmissions(baseDir, common.TEST_ERROR_SUBMISSIONS);
+    testSubmissions, err := GetErrorTestSubmissions(baseDir);
     if (err != nil) {
         test.Fatalf("Error getting test submissions in '%s': '%v'.", baseDir, err);
     }
@@ -171,7 +170,6 @@ func TestErrorSubmissions(test *testing.T) {
                 test.Fatalf("Actual error:\n---\n%v\n---\ndoes not match expected err:\n---\n%v\n---\n.",
                     testSubmission.TestSubmission.Error, err.Error());
             }
-
         });
 
         if (!ok) {
